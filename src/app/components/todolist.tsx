@@ -12,8 +12,6 @@ import {
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
-import './win98.css'; // add a Windows 98 style sheet
-
 type Task = {
   id: string;
   text: string;
@@ -149,64 +147,78 @@ export default function TodoList() {
   });
 
   return (
-    <div className="window mx-auto mt-10 p-4 w-[400px]">
-      <div className="title-bar">
-        <div className="title-bar-text">To-Do List</div>
-        <div className="title-bar-controls">
-          <button aria-label="Minimize"></button>
-          <button aria-label="Maximize"></button>
-          <button aria-label="Close"></button>
+    <div className="max-w-md mx-auto mt-10 p-4 bg-white shadow-md rounded-lg">
+      <h1 className="text-2xl text-emerald-500 font-bold mb-4">To-Do List</h1>
+      <div className="flex justify-between mb-4">
+        <button
+          onClick={addTask}
+          className="bg-slate-500 text-white px-4 py-2 rounded"
+        >
+          Tambah Tugas
+        </button>
+        <div className="flex gap-2">
+          <button onClick={() => setFilter('all')} className="text-sm bg-gray-200 px-2 py-1 rounded">Semua</button>
+          <button onClick={() => setFilter('completed')} className="text-sm bg-green-200 px-2 py-1 rounded">Selesai</button>
+          <button onClick={() => setFilter('ongoing')} className="text-sm bg-yellow-200 px-2 py-1 rounded">Sedang</button>
         </div>
       </div>
-      <div className="window-body">
-        <div className="field-row justify-between mb-2">
-          <button onClick={addTask}>Tambah Tugas</button>
-          <div className="field-row" style={{ gap: '0.25rem' }}>
-            <button onClick={() => setFilter('all')}>Semua</button>
-            <button onClick={() => setFilter('completed')}>Selesai</button>
-            <button onClick={() => setFilter('ongoing')}>Sedang</button>
-          </div>
-        </div>
-        <ul style={{ listStyleType: 'none', padding: 0 }}>
-          <AnimatePresence>
-            {filteredTasks.map((task) => {
-              const timeLeft = calculateTimeRemaining(task.deadline);
-              const isExpired = timeLeft === 'Waktu habis!';
-              const taskColor = task.completed
-                ? '#C0FFC0'
-                : isExpired
-                ? '#FFCCCC'
-                : '#FFFFCC';
+      <ul>
+        <AnimatePresence>
+          {filteredTasks.map((task) => {
+            const timeLeft = calculateTimeRemaining(task.deadline);
+            const isExpired = timeLeft === 'Waktu habis!';
+            const taskColor = task.completed
+              ? 'bg-green-200'
+              : isExpired
+              ? 'bg-red-200'
+              : 'bg-yellow-200';
 
-              return (
-                <motion.li
-                  key={task.id}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                  style={{ backgroundColor: taskColor, padding: '0.5rem', marginBottom: '0.25rem', border: '1px solid #000', borderRadius: '2px' }}
-                >
-                  <div className="field-row justify-between">
-                    <span
-                      onClick={() => toggleTask(task.id)}
-                      style={{ cursor: 'pointer', textDecoration: task.completed ? 'line-through' : 'none', fontWeight: task.completed ? 'normal' : 'bold' }}
+            return (
+              <motion.li
+                key={task.id}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className={`flex flex-col justify-between p-2 border-b rounded-lg ${taskColor}`}
+              >
+                <div className="flex justify-between items-center">
+                  <span
+                    onClick={() => toggleTask(task.id)}
+                    className={`cursor-pointer transition-500 ${
+                      task.completed
+                        ? 'line-through text-gray-500'
+                        : 'font-semibold text-gray-700'
+                    }`}
+                  >
+                    {task.text}
+                  </span>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => editTask(task.id, task.text, task.deadline)}
+                      className="text-white px-2 rounded bg-blue-600 hover:bg-blue-800"
                     >
-                      {task.text}
-                    </span>
-                    <div className="field-row" style={{ gap: '0.25rem' }}>
-                      <button onClick={() => editTask(task.id, task.text, task.deadline)}>Edit</button>
-                      <button onClick={() => deleteTask(task.id)}>Hapus</button>
-                    </div>
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => deleteTask(task.id)}
+                      className="text-white p-1 rounded bg-red-600 hover:bg-red-800"
+                    >
+                      Hapus
+                    </button>
                   </div>
-                  <p>Deadline: {new Date(task.deadline).toLocaleString()}</p>
-                  <p>⏳ {timeRemaining[task.id] || 'Menghitung...'}</p>
-                </motion.li>
-              );
-            })}
-          </AnimatePresence>
-        </ul>
-      </div>
+                </div>
+                <p className="text-sm text-gray-700">
+                  Deadline: {new Date(task.deadline).toLocaleString()}
+                </p>
+                <p className="text-xs font-semibold text-gray-700">
+                  ⏳ {timeRemaining[task.id] || 'Menghitung...'}
+                </p>
+              </motion.li>
+            );
+          })}
+        </AnimatePresence>
+      </ul>
     </div>
   );
 }
