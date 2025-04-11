@@ -12,7 +12,6 @@ import {
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
-import './globals.css';
 
 const win98Style = `
   .window {
