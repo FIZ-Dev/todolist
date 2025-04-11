@@ -19,51 +19,79 @@ const win98Style = `
     background: #c0c0c0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     box-shadow: inset -2px -2px #fff, inset 2px 2px #404040;
+    padding: 0;
   }
+
   .title-bar {
     background: linear-gradient(to right, #000080, #0000cd);
     color: white;
-    padding: 2px 8px;
+    padding: 4px 8px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    font-size: 14px;
   }
+
   .title-bar-text {
     font-weight: bold;
   }
+
+  .title-bar-controls {
+    display: flex;
+  }
+
   .title-bar-controls button {
     width: 16px;
     height: 14px;
     background: #c0c0c0;
     border: 1px solid #000;
-    margin-left: 2px;
+    margin-left: 4px;
+    padding: 0;
+    box-shadow: inset -1px -1px #fff, inset 1px 1px #404040;
+    cursor: pointer;
   }
+
+  .title-bar-controls button:active {
+    box-shadow: inset 1px 1px #fff, inset -1px -1px #404040;
+  }
+
   .window-body {
     background: #c0c0c0;
-    padding: 8px;
+    padding: 12px;
     border-top: 2px solid #fff;
   }
+
   .field-row {
     display: flex;
     align-items: center;
+    gap: 4px;
   }
+
   button {
     font-size: 12px;
-    padding: 2px 6px;
+    padding: 4px 8px;
     background: #e0e0e0;
     border: 1px solid #000;
     box-shadow: inset -1px -1px #fff, inset 1px 1px #808080;
-    margin-right: 4px;
+    cursor: pointer;
   }
+
+  button:hover {
+    background: #d0d0d0;
+  }
+
   button:active {
     box-shadow: inset 1px 1px #fff, inset -1px -1px #808080;
   }
+
   ul {
     margin: 0;
     padding: 0;
   }
+
   li {
     font-size: 14px;
+    list-style: none;
   }
 `;
 
