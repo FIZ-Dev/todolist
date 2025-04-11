@@ -19,11 +19,12 @@ type Task = {
   deadline: string;
 };
 
+type Filter = 'all' | 'completed' | 'ongoing';
+
 export default function TodoList() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [timeRemaining, setTimeRemaining] = useState<{ [key: string]: string }>(
-    {}
-  );
+  const [timeRemaining, setTimeRemaining] = useState<{ [key: string]: string }>({});
+  const [filter, setFilter] = useState<Filter>('all');
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -92,6 +93,37 @@ export default function TodoList() {
     }
   };
 
+  const editTask = async (id: string, currentText: string, currentDeadline: string): Promise<void> => {
+    const { value: formValues } = await Swal.fire({
+      title: 'Edit Tugas',
+      html:
+        `<input id="swal-input1" class="swal2-input" value="${currentText}" placeholder="Nama tugas">` +
+        `<input id="swal-input2" type="datetime-local" class="swal2-input" value="${currentDeadline}">`,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Simpan',
+      cancelButtonText: 'Batal',
+      preConfirm: () => {
+        return [
+          (document.getElementById('swal-input1') as HTMLInputElement)?.value,
+          (document.getElementById('swal-input2') as HTMLInputElement)?.value,
+        ];
+      },
+    });
+
+    if (formValues && formValues[0] && formValues[1]) {
+      const updatedTasks = tasks.map((task) =>
+        task.id === id ? { ...task, text: formValues[0], deadline: formValues[1] } : task
+      );
+      setTasks(updatedTasks);
+      const taskRef = doc(db, 'tasks', id);
+      await updateDoc(taskRef, {
+        text: formValues[0],
+        deadline: formValues[1],
+      });
+    }
+  };
+
   const toggleTask = async (id: string): Promise<void> => {
     const updatedTasks = tasks.map((task) =>
       task.id === id ? { ...task, completed: !task.completed } : task
@@ -108,20 +140,31 @@ export default function TodoList() {
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
+  const filteredTasks = tasks.filter((task) => {
+    if (filter === 'completed') return task.completed;
+    if (filter === 'ongoing') return !task.completed;
+    return true;
+  });
+
   return (
     <div className="max-w-md mx-auto mt-10 p-4 bg-white shadow-md rounded-lg">
       <h1 className="text-2xl text-emerald-500 font-bold mb-4">To-Do List</h1>
-      <div className="flex justify-center mb-4">
+      <div className="flex justify-between mb-4">
         <button
           onClick={addTask}
           className="bg-slate-500 text-white px-4 py-2 rounded"
         >
           Tambah Tugas
         </button>
+        <div className="flex gap-2">
+          <button onClick={() => setFilter('all')} className="text-sm bg-gray-200 px-2 py-1 rounded">Semua</button>
+          <button onClick={() => setFilter('completed')} className="text-sm bg-green-200 px-2 py-1 rounded">Selesai</button>
+          <button onClick={() => setFilter('ongoing')} className="text-sm bg-yellow-200 px-2 py-1 rounded">Sedang</button>
+        </div>
       </div>
       <ul>
         <AnimatePresence>
-          {tasks.map((task) => {
+          {filteredTasks.map((task) => {
             const timeLeft = calculateTimeRemaining(task.deadline);
             const isExpired = timeLeft === 'Waktu habis!';
             const taskColor = task.completed
@@ -150,12 +193,20 @@ export default function TodoList() {
                   >
                     {task.text}
                   </span>
-                  <button
-                    onClick={() => deleteTask(task.id)}
-                    className="text-white p-1 rounded bg-red-600 hover:bg-red-800"
-                  >
-                    Hapus
-                  </button>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => editTask(task.id, task.text, task.deadline)}
+                      className="text-white px-2 rounded bg-blue-600 hover:bg-blue-800"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => deleteTask(task.id)}
+                      className="text-white p-1 rounded bg-red-600 hover:bg-red-800"
+                    >
+                      Hapus
+                    </button>
+                  </div>
                 </div>
                 <p className="text-sm text-gray-700">
                   Deadline: {new Date(task.deadline).toLocaleString()}
