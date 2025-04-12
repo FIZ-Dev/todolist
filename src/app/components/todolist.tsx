@@ -199,15 +199,44 @@ export default function TodoList() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [timeRemaining, setTimeRemaining] = useState<{ [key: string]: string }>({});
   const [filter, setFilter] = useState<Filter>('all');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Notification function for Windows 98-style alerts
+  const showNotification = (title: string, message: string, icon: 'success' | 'error' | 'info' | 'warning') => {
+    return Swal.fire({
+      title: title,
+      text: message,
+      icon: icon,
+      timer: 2000,
+      showConfirmButton: false,
+      customClass: {
+        popup: 'swal2-popup',
+        title: 'swal2-title',
+        htmlContainer: 'swal2-html-container',
+      },
+    });
+  };
 
   useEffect(() => {
     const fetchTasks = async () => {
-      const querySnapshot = await getDocs(collection(db, 'tasks'));
-      const tasksData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Task[];
-      setTasks(tasksData);
+      setIsLoading(true);
+      try {
+        showNotification('Sistem', 'Memuat tugas...', 'info');
+        
+        const querySnapshot = await getDocs(collection(db, 'tasks'));
+        const tasksData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Task[];
+        
+        setTasks(tasksData);
+        showNotification('Sistem', 'Tugas berhasil dimuat!', 'success');
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+        showNotification('Error', 'Gagal memuat tugas!', 'error');
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchTasks();
   }, []);
@@ -258,27 +287,47 @@ export default function TodoList() {
         cancelButton: 'swal2-cancel'
       },
       preConfirm: () => {
-        return [
-          (document.getElementById('swal-input1') as HTMLInputElement)?.value,
-          (document.getElementById('swal-input2') as HTMLInputElement)?.value,
-        ];
+        const text = (document.getElementById('swal-input1') as HTMLInputElement)?.value;
+        const deadline = (document.getElementById('swal-input2') as HTMLInputElement)?.value;
+        
+        if (!text.trim()) {
+          Swal.showValidationMessage('Nama tugas tidak boleh kosong!');
+          return false;
+        }
+        
+        if (!deadline) {
+          Swal.showValidationMessage('Deadline harus diisi!');
+          return false;
+        }
+        
+        return [text, deadline];
       },
     });
 
-    return formValues && formValues[0] && formValues[1] ? formValues : null;
+    return formValues ? formValues : null;
   };
 
   const addTask = async (): Promise<void> => {
     const formValues = await showWin98Alert('Tambahkan tugas baru');
 
     if (formValues) {
-      const newTask: Omit<Task, 'id'> = {
-        text: formValues[0],
-        completed: false,
-        deadline: formValues[1],
-      };
-      const docRef = await addDoc(collection(db, 'tasks'), newTask);
-      setTasks([...tasks, { id: docRef.id, ...newTask }]);
+      try {
+        showNotification('Sistem', 'Menambahkan tugas...', 'info');
+        
+        const newTask: Omit<Task, 'id'> = {
+          text: formValues[0],
+          completed: false,
+          deadline: formValues[1],
+        };
+        
+        const docRef = await addDoc(collection(db, 'tasks'), newTask);
+        setTasks([...tasks, { id: docRef.id, ...newTask }]);
+        
+        showNotification('Sukses', 'Tugas berhasil ditambahkan!', 'success');
+      } catch (error) {
+        console.error('Error adding task:', error);
+        showNotification('Error', 'Gagal menambahkan tugas!', 'error');
+      }
     }
   };
 
@@ -286,27 +335,51 @@ export default function TodoList() {
     const formValues = await showWin98Alert('Edit Tugas', currentText, currentDeadline);
 
     if (formValues) {
-      const updatedTasks = tasks.map((task) =>
-        task.id === id ? { ...task, text: formValues[0], deadline: formValues[1] } : task
-      );
-      setTasks(updatedTasks);
-      const taskRef = doc(db, 'tasks', id);
-      await updateDoc(taskRef, {
-        text: formValues[0],
-        deadline: formValues[1],
-      });
+      try {
+        showNotification('Sistem', 'Menyimpan perubahan...', 'info');
+        
+        const updatedTasks = tasks.map((task) =>
+          task.id === id ? { ...task, text: formValues[0], deadline: formValues[1] } : task
+        );
+        
+        const taskRef = doc(db, 'tasks', id);
+        await updateDoc(taskRef, {
+          text: formValues[0],
+          deadline: formValues[1],
+        });
+        
+        setTasks(updatedTasks);
+        showNotification('Sukses', 'Tugas berhasil diperbarui!', 'success');
+      } catch (error) {
+        console.error('Error updating task:', error);
+        showNotification('Error', 'Gagal memperbarui tugas!', 'error');
+      }
     }
   };
 
   const toggleTask = async (id: string): Promise<void> => {
-    const updatedTasks = tasks.map((task) =>
-      task.id === id ? { ...task, completed: !task.completed } : task
-    );
-    setTasks(updatedTasks);
-    const taskRef = doc(db, 'tasks', id);
-    await updateDoc(taskRef, {
-      completed: updatedTasks.find((task) => task.id === id)?.completed,
-    });
+    try {
+      const task = tasks.find(t => t.id === id);
+      const newStatus = !task?.completed;
+      const statusText = newStatus ? 'selesai' : 'belum selesai';
+      
+      showNotification('Sistem', `Mengubah status tugas menjadi ${statusText}...`, 'info');
+      
+      const updatedTasks = tasks.map((task) =>
+        task.id === id ? { ...task, completed: newStatus } : task
+      );
+      
+      const taskRef = doc(db, 'tasks', id);
+      await updateDoc(taskRef, {
+        completed: newStatus,
+      });
+      
+      setTasks(updatedTasks);
+      showNotification('Sukses', `Status tugas berhasil diubah menjadi ${statusText}!`, 'success');
+    } catch (error) {
+      console.error('Error toggling task status:', error);
+      showNotification('Error', 'Gagal mengubah status tugas!', 'error');
+    }
   };
 
   const deleteTask = async (id: string): Promise<void> => {
@@ -327,8 +400,17 @@ export default function TodoList() {
     });
 
     if (isConfirmed) {
-      await deleteDoc(doc(db, 'tasks', id));
-      setTasks(tasks.filter((task) => task.id !== id));
+      try {
+        showNotification('Sistem', 'Menghapus tugas...', 'info');
+        
+        await deleteDoc(doc(db, 'tasks', id));
+        setTasks(tasks.filter((task) => task.id !== id));
+        
+        showNotification('Sukses', 'Tugas berhasil dihapus!', 'success');
+      } catch (error) {
+        console.error('Error deleting task:', error);
+        showNotification('Error', 'Gagal menghapus tugas!', 'error');
+      }
     }
   };
 
@@ -359,45 +441,56 @@ export default function TodoList() {
               <button onClick={() => setFilter('ongoing')}>Sedang</button>
             </div>
           </div>
-          <ul style={{ listStyleType: 'none', padding: 0 }}>
-            <AnimatePresence>
-              {filteredTasks.map((task) => {
-                const timeLeft = calculateTimeRemaining(task.deadline);
-                const isExpired = timeLeft === 'Waktu habis!';
-                const taskColor = task.completed
-                  ? '#C0FFC0'
-                  : isExpired
-                  ? '#FFCCCC'
-                  : '#FFFFCC';
+          
+          {isLoading ? (
+            <div style={{ textAlign: 'center', padding: '1rem' }}>
+              <p>Memuat data tugas...</p>
+            </div>
+          ) : filteredTasks.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '1rem', border: '1px solid #000', background: '#FFFFCC' }}>
+              <p>Tidak ada tugas {filter === 'all' ? '' : filter === 'completed' ? 'yang selesai' : 'yang sedang berjalan'}.</p>
+            </div>
+          ) : (
+            <ul style={{ listStyleType: 'none', padding: 0 }}>
+              <AnimatePresence>
+                {filteredTasks.map((task) => {
+                  const timeLeft = calculateTimeRemaining(task.deadline);
+                  const isExpired = timeLeft === 'Waktu habis!';
+                  const taskColor = task.completed
+                    ? '#C0FFC0'
+                    : isExpired
+                    ? '#FFCCCC'
+                    : '#FFFFCC';
 
-                return (
-                  <motion.li
-                    key={task.id}
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                    style={{ backgroundColor: taskColor, padding: '0.5rem', marginBottom: '0.25rem', border: '1px solid #000', borderRadius: '2px' }}
-                  >
-                    <div className="field-row justify-between">
-                      <span
-                        onClick={() => toggleTask(task.id)}
-                        style={{ cursor: 'pointer', textDecoration: task.completed ? 'line-through' : 'none', fontWeight: task.completed ? 'normal' : 'bold' }}
-                      >
-                        {task.text}
-                      </span>
-                      <div className="field-row" style={{ gap: '0.25rem' }}>
-                        <button onClick={() => editTask(task.id, task.text, task.deadline)}>Edit</button>
-                        <button onClick={() => deleteTask(task.id)}>Hapus</button>
+                  return (
+                    <motion.li
+                      key={task.id}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.3 }}
+                      style={{ backgroundColor: taskColor, padding: '0.5rem', marginBottom: '0.25rem', border: '1px solid #000', borderRadius: '2px' }}
+                    >
+                      <div className="field-row justify-between">
+                        <span
+                          onClick={() => toggleTask(task.id)}
+                          style={{ cursor: 'pointer', textDecoration: task.completed ? 'line-through' : 'none', fontWeight: task.completed ? 'normal' : 'bold' }}
+                        >
+                          {task.text}
+                        </span>
+                        <div className="field-row" style={{ gap: '0.25rem' }}>
+                          <button onClick={() => editTask(task.id, task.text, task.deadline)}>Edit</button>
+                          <button onClick={() => deleteTask(task.id)}>Hapus</button>
+                        </div>
                       </div>
-                    </div>
-                    <p>Deadline: {new Date(task.deadline).toLocaleString()}</p>
-                    <p>⏳ {timeRemaining[task.id] || 'Menghitung...'}</p>
-                  </motion.li>
-                );
-              })}
-            </AnimatePresence>
-          </ul>
+                      <p>Deadline: {new Date(task.deadline).toLocaleString()}</p>
+                      <p>⏳ {timeRemaining[task.id] || 'Menghitung...'}</p>
+                    </motion.li>
+                  );
+                })}
+              </AnimatePresence>
+            </ul>
+          )}
         </div>
       </div>
     </div>
