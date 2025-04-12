@@ -120,6 +120,67 @@ const win98Style = `
     margin: 4px 0;
     color: black;
   }
+  
+  /* Custom SweetAlert Windows 98 style */
+  .swal2-popup {
+    border: 2px solid #000 !important;
+    background: #c0c0c0 !important;
+    font-family: 'Microsoft Sans Serif', 'Tahoma', sans-serif !important;
+    box-shadow: inset -2px -2px #fff, inset 2px 2px #808080 !important;
+    padding: 0 !important;
+    color: black !important;
+    border-radius: 0 !important;
+  }
+  
+  .swal2-title {
+    background: linear-gradient(to right, #000080, #0000cd) !important;
+    color: white !important;
+    padding: 4px 8px !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    text-shadow: 1px 1px #000 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    border-bottom: 2px solid #fff !important;
+  }
+  
+  .swal2-html-container {
+    background: #c0c0c0 !important;
+    padding: 12px !important;
+    color: black !important;
+    margin-top: 0 !important;
+  }
+  
+  .swal2-actions {
+    background: #c0c0c0 !important;
+    padding: 8px !important;
+    gap: 8px !important;
+    margin-top: 0 !important;
+  }
+  
+  .swal2-confirm, .swal2-cancel {
+    font-size: 12px !important;
+    padding: 4px 8px !important;
+    background: #e0e0e0 !important;
+    border: 1px solid #000 !important;
+    box-shadow: inset -1px -1px #fff, inset 1px 1px #808080 !important;
+    cursor: pointer !important;
+    color: black !important;
+    border-radius: 0 !important;
+  }
+  
+  .swal2-confirm:hover, .swal2-cancel:hover {
+    background: #d0d0d0 !important;
+  }
+  
+  .swal2-confirm:active, .swal2-cancel:active {
+    box-shadow: inset 1px 1px #fff, inset -1px -1px #808080 !important;
+  }
+  
+  .swal2-confirm:focus, .swal2-cancel:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 2px #000 !important;
+  }
 `;
 
 
@@ -177,16 +238,25 @@ export default function TodoList() {
     return `${hours}j ${minutes}m ${seconds}d`;
   };
 
-  const addTask = async (): Promise<void> => {
+  const showWin98Alert = async (title: string, currentText: string = '', currentDeadline: string = ''): Promise<string[] | null> => {
+    // Configure SweetAlert with Windows 98 style
     const { value: formValues } = await Swal.fire({
-      title: 'Tambahkan tugas baru',
+      title: title,
       html:
-        '<input id="swal-input1" class="swal2-input" placeholder="Nama tugas">' +
-        '<input id="swal-input2" type="datetime-local" class="swal2-input">',
+        `<input id="swal-input1" class="swal2-input" value="${currentText}" placeholder="Nama tugas">` +
+        `<input id="swal-input2" type="datetime-local" class="swal2-input" value="${currentDeadline}">`,
       focusConfirm: false,
       showCancelButton: true,
-      confirmButtonText: 'Tambah',
+      confirmButtonText: currentText ? 'Simpan' : 'Tambah',
       cancelButtonText: 'Batal',
+      customClass: {
+        popup: 'swal2-popup',
+        title: 'swal2-title',
+        htmlContainer: 'swal2-html-container',
+        actions: 'swal2-actions',
+        confirmButton: 'swal2-confirm',
+        cancelButton: 'swal2-cancel'
+      },
       preConfirm: () => {
         return [
           (document.getElementById('swal-input1') as HTMLInputElement)?.value,
@@ -195,7 +265,13 @@ export default function TodoList() {
       },
     });
 
-    if (formValues && formValues[0] && formValues[1]) {
+    return formValues && formValues[0] && formValues[1] ? formValues : null;
+  };
+
+  const addTask = async (): Promise<void> => {
+    const formValues = await showWin98Alert('Tambahkan tugas baru');
+
+    if (formValues) {
       const newTask: Omit<Task, 'id'> = {
         text: formValues[0],
         completed: false,
@@ -207,24 +283,9 @@ export default function TodoList() {
   };
 
   const editTask = async (id: string, currentText: string, currentDeadline: string): Promise<void> => {
-    const { value: formValues } = await Swal.fire({
-      title: 'Edit Tugas',
-      html:
-        `<input id="swal-input1" class="swal2-input" value="${currentText}" placeholder="Nama tugas">` +
-        `<input id="swal-input2" type="datetime-local" class="swal2-input" value="${currentDeadline}">`,
-      focusConfirm: false,
-      showCancelButton: true,
-      confirmButtonText: 'Simpan',
-      cancelButtonText: 'Batal',
-      preConfirm: () => {
-        return [
-          (document.getElementById('swal-input1') as HTMLInputElement)?.value,
-          (document.getElementById('swal-input2') as HTMLInputElement)?.value,
-        ];
-      },
-    });
+    const formValues = await showWin98Alert('Edit Tugas', currentText, currentDeadline);
 
-    if (formValues && formValues[0] && formValues[1]) {
+    if (formValues) {
       const updatedTasks = tasks.map((task) =>
         task.id === id ? { ...task, text: formValues[0], deadline: formValues[1] } : task
       );
@@ -249,8 +310,26 @@ export default function TodoList() {
   };
 
   const deleteTask = async (id: string): Promise<void> => {
-    await deleteDoc(doc(db, 'tasks', id));
-    setTasks(tasks.filter((task) => task.id !== id));
+    const { isConfirmed } = await Swal.fire({
+      title: 'Konfirmasi',
+      text: 'Apakah Anda yakin ingin menghapus tugas ini?',
+      showCancelButton: true,
+      confirmButtonText: 'Hapus',
+      cancelButtonText: 'Batal',
+      customClass: {
+        popup: 'swal2-popup',
+        title: 'swal2-title',
+        htmlContainer: 'swal2-html-container',
+        actions: 'swal2-actions',
+        confirmButton: 'swal2-confirm',
+        cancelButton: 'swal2-cancel'
+      },
+    });
+
+    if (isConfirmed) {
+      await deleteDoc(doc(db, 'tasks', id));
+      setTasks(tasks.filter((task) => task.id !== id));
+    }
   };
 
   const filteredTasks = tasks.filter((task) => {
