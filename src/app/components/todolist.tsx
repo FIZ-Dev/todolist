@@ -17,9 +17,10 @@ const win98Style = `
   .window {
     border: 2px solid #000;
     background: #c0c0c0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    box-shadow: inset -2px -2px #fff, inset 2px 2px #404040;
+    font-family: 'Microsoft Sans Serif', 'Tahoma', sans-serif;
+    box-shadow: inset -2px -2px #fff, inset 2px 2px #808080;
     padding: 0;
+    color: black;
   }
 
   .title-bar {
@@ -30,6 +31,8 @@ const win98Style = `
     align-items: center;
     justify-content: space-between;
     font-size: 14px;
+    font-weight: bold;
+    text-shadow: 1px 1px #000;
   }
 
   .title-bar-text {
@@ -59,6 +62,7 @@ const win98Style = `
     background: #c0c0c0;
     padding: 12px;
     border-top: 2px solid #fff;
+    color: black;
   }
 
   .field-row {
@@ -74,6 +78,7 @@ const win98Style = `
     border: 1px solid #000;
     box-shadow: inset -1px -1px #fff, inset 1px 1px #808080;
     cursor: pointer;
+    color: black;
   }
 
   button:hover {
@@ -84,6 +89,11 @@ const win98Style = `
     box-shadow: inset 1px 1px #fff, inset -1px -1px #808080;
   }
 
+  button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #000;
+  }
+
   ul {
     margin: 0;
     padding: 0;
@@ -92,8 +102,26 @@ const win98Style = `
   li {
     font-size: 14px;
     list-style: none;
+    color: black;
+  }
+
+  input,
+  .swal2-input {
+    background: #fff;
+    border: 2px solid #000;
+    padding: 4px;
+    font-size: 14px;
+    font-family: 'Microsoft Sans Serif', 'Tahoma', sans-serif;
+    box-shadow: inset -1px -1px #fff, inset 1px 1px #808080;
+    color: black;
+  }
+
+  p {
+    margin: 4px 0;
+    color: black;
   }
 `;
+
 
 const styleTag = <style dangerouslySetInnerHTML={{ __html: win98Style }} />;
 
