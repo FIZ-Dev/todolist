@@ -264,7 +264,7 @@ export default function TodoList() {
       {styleTag}
       <div className="window mx-auto mt-10 p-4 w-[400px]">
         <div className="title-bar">
-          <div className="title-bar-text">To-Do List</div>
+          <div className="title-bar-text">Task98</div>
           <div className="title-bar-controls">
             <button aria-label="Minimize"></button>
             <button aria-label="Maximize"></button>
