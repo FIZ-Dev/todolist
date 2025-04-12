@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Swal from 'sweetalert2';
 import {
@@ -181,6 +181,74 @@ const win98Style = `
     outline: none !important;
     box-shadow: 0 0 0 2px #000 !important;
   }
+  
+  /* Slide Notification Styles */
+  .notifications-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 250px;
+    max-width: 90%;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .notification {
+    border: 2px solid #000;
+    background: #c0c0c0;
+    box-shadow: inset -1px -1px #404040, inset 1px 1px #fff, 4px 4px 8px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+  }
+  
+  .notification-title {
+    background: linear-gradient(to right, #000080, #0000cd);
+    color: white;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    text-shadow: 1px 1px #000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .notification-close {
+    width: 14px;
+    height: 14px;
+    background: #c0c0c0;
+    border: 1px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    box-shadow: inset -1px -1px #404040, inset 1px 1px #fff;
+  }
+  
+  .notification-body {
+    padding: 8px;
+    font-size: 12px;
+  }
+  
+  .notification-success .notification-title {
+    background: linear-gradient(to right, #008000, #00a000);
+  }
+  
+  .notification-error .notification-title {
+    background: linear-gradient(to right, #800000, #a00000);
+  }
+  
+  .notification-info .notification-title {
+    background: linear-gradient(to right, #000080, #0000cd);
+  }
+  
+  .notification-warning .notification-title {
+    background: linear-gradient(to right, #806600, #a08200);
+  }
 `;
 
 
@@ -195,33 +263,46 @@ type Task = {
 
 type Filter = 'all' | 'completed' | 'ongoing';
 
+type NotificationType = 'success' | 'error' | 'info' | 'warning';
+
+type Notification = {
+  id: string;
+  title: string;
+  message: string;
+  type: NotificationType;
+};
+
 export default function TodoList() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [timeRemaining, setTimeRemaining] = useState<{ [key: string]: string }>({});
   const [filter, setFilter] = useState<Filter>('all');
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  // Notification function for Windows 98-style alerts
-  const showNotification = (title: string, message: string, icon: 'success' | 'error' | 'info' | 'warning') => {
-    return Swal.fire({
-      title: title,
-      text: message,
-      icon: icon,
-      timer: 2000,
-      showConfirmButton: false,
-      customClass: {
-        popup: 'swal2-popup',
-        title: 'swal2-title',
-        htmlContainer: 'swal2-html-container',
-      },
-    });
+  // Notification system
+  const addNotification = useCallback((title: string, message: string, type: NotificationType) => {
+    const id = Date.now().toString();
+    const newNotification = { id, title, message, type };
+    
+    setNotifications(prev => [newNotification, ...prev]);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+      removeNotification(id);
+    }, 3000);
+    
+    return id;
+  }, []);
+  
+  const removeNotification = (id: string) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
   };
 
   useEffect(() => {
     const fetchTasks = async () => {
       setIsLoading(true);
       try {
-        showNotification('Sistem', 'Memuat tugas...', 'info');
+        addNotification('Sistem', 'Memuat tugas...', 'info');
         
         const querySnapshot = await getDocs(collection(db, 'tasks'));
         const tasksData = querySnapshot.docs.map((doc) => ({
@@ -230,16 +311,16 @@ export default function TodoList() {
         })) as Task[];
         
         setTasks(tasksData);
-        showNotification('Sistem', 'Tugas berhasil dimuat!', 'success');
+        addNotification('Sukses', 'Tugas berhasil dimuat!', 'success');
       } catch (error) {
         console.error('Error fetching tasks:', error);
-        showNotification('Error', 'Gagal memuat tugas!', 'error');
+        addNotification('Error', 'Gagal memuat tugas!', 'error');
       } finally {
         setIsLoading(false);
       }
     };
     fetchTasks();
-  }, []);
+  }, [addNotification]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -312,7 +393,7 @@ export default function TodoList() {
 
     if (formValues) {
       try {
-        showNotification('Sistem', 'Menambahkan tugas...', 'info');
+        addNotification('Sistem', 'Menambahkan tugas...', 'info');
         
         const newTask: Omit<Task, 'id'> = {
           text: formValues[0],
@@ -323,10 +404,10 @@ export default function TodoList() {
         const docRef = await addDoc(collection(db, 'tasks'), newTask);
         setTasks([...tasks, { id: docRef.id, ...newTask }]);
         
-        showNotification('Sukses', 'Tugas berhasil ditambahkan!', 'success');
+        addNotification('Sukses', 'Tugas berhasil ditambahkan!', 'success');
       } catch (error) {
         console.error('Error adding task:', error);
-        showNotification('Error', 'Gagal menambahkan tugas!', 'error');
+        addNotification('Error', 'Gagal menambahkan tugas!', 'error');
       }
     }
   };
@@ -336,7 +417,7 @@ export default function TodoList() {
 
     if (formValues) {
       try {
-        showNotification('Sistem', 'Menyimpan perubahan...', 'info');
+        addNotification('Sistem', 'Menyimpan perubahan...', 'info');
         
         const updatedTasks = tasks.map((task) =>
           task.id === id ? { ...task, text: formValues[0], deadline: formValues[1] } : task
@@ -349,10 +430,10 @@ export default function TodoList() {
         });
         
         setTasks(updatedTasks);
-        showNotification('Sukses', 'Tugas berhasil diperbarui!', 'success');
+        addNotification('Sukses', 'Tugas berhasil diperbarui!', 'success');
       } catch (error) {
         console.error('Error updating task:', error);
-        showNotification('Error', 'Gagal memperbarui tugas!', 'error');
+        addNotification('Error', 'Gagal memperbarui tugas!', 'error');
       }
     }
   };
@@ -363,7 +444,7 @@ export default function TodoList() {
       const newStatus = !task?.completed;
       const statusText = newStatus ? 'selesai' : 'belum selesai';
       
-      showNotification('Sistem', `Mengubah status tugas menjadi ${statusText}...`, 'info');
+      addNotification('Sistem', `Mengubah status tugas menjadi ${statusText}...`, 'info');
       
       const updatedTasks = tasks.map((task) =>
         task.id === id ? { ...task, completed: newStatus } : task
@@ -375,10 +456,10 @@ export default function TodoList() {
       });
       
       setTasks(updatedTasks);
-      showNotification('Sukses', `Status tugas berhasil diubah menjadi ${statusText}!`, 'success');
+      addNotification('Sukses', `Status tugas berhasil diubah menjadi ${statusText}!`, 'success');
     } catch (error) {
       console.error('Error toggling task status:', error);
-      showNotification('Error', 'Gagal mengubah status tugas!', 'error');
+      addNotification('Error', 'Gagal mengubah status tugas!', 'error');
     }
   };
 
@@ -401,15 +482,15 @@ export default function TodoList() {
 
     if (isConfirmed) {
       try {
-        showNotification('Sistem', 'Menghapus tugas...', 'info');
+        addNotification('Sistem', 'Menghapus tugas...', 'info');
         
         await deleteDoc(doc(db, 'tasks', id));
         setTasks(tasks.filter((task) => task.id !== id));
         
-        showNotification('Sukses', 'Tugas berhasil dihapus!', 'success');
+        addNotification('Sukses', 'Tugas berhasil dihapus!', 'success');
       } catch (error) {
         console.error('Error deleting task:', error);
-        showNotification('Error', 'Gagal menghapus tugas!', 'error');
+        addNotification('Error', 'Gagal menghapus tugas!', 'error');
       }
     }
   };
@@ -423,6 +504,35 @@ export default function TodoList() {
   return (
     <div>
       {styleTag}
+      {/* Notifications Container */}
+      <div className="notifications-container">
+        <AnimatePresence>
+          {notifications.map((notification) => (
+            <motion.div
+              key={notification.id}
+              className={`notification notification-${notification.type}`}
+              initial={{ opacity: 0, y: -20, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="notification-title">
+                <span>{notification.title}</span>
+                <div 
+                  className="notification-close" 
+                  onClick={() => removeNotification(notification.id)}
+                >
+                  ✕
+                </div>
+              </div>
+              <div className="notification-body">
+                {notification.message}
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
       <div className="window mx-auto mt-10 p-4 w-[400px]">
         <div className="title-bar">
           <div className="title-bar-text">Task98</div>
