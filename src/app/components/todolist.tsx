@@ -649,12 +649,6 @@ export default function TodoList() {
         </div>
       </div>
       
-      {/* Windows 98 Taskbar */}
-      <div className="taskbar">
-        <div style={{ marginRight: '4px' }}>🪟</div>
-        Start
-        <div className="taskbar-time">{new Date().toLocaleTimeString()}</div>
-      </div>
     </div>
   );
 }
