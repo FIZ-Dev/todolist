@@ -14,7 +14,21 @@ import { db } from '../lib/firebase';
 
 
 const win98Style = `
-  .window {
+body {
+  background: #008080;
+  font-family: 'Microsoft Sans Serif', 'Tahoma', sans-serif;
+  color: #000;
+  display: flex;
+  justify-content: center;S
+  background-image: linear-gradient(45deg, #009999 25%, transparent 25%), 
+                    linear-gradient(-45deg, #009999 25%, transparent 25%), 
+                    linear-gradient(45deg, transparent 75%, #009999 75%),
+                    linear-gradient(-45deg, transparent 75%, #009999 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+  
+.window {
     border: 2px solid #000;
     background: #c0c0c0;
     font-family: 'Microsoft Sans Serif', 'Tahoma', sans-serif;
