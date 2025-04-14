@@ -303,7 +303,7 @@ export default function TodoList() {
     // Auto remove after 3 seconds
     setTimeout(() => {
       removeNotification(id);
-    }, 3000);
+    }, 2000);
     
     return id;
   }, []);
