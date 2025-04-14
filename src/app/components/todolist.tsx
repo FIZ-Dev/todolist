@@ -14,31 +14,27 @@ import { db } from '../lib/firebase';
 
 
 const win98Style = `
-body {
-  background: #008080;
-  font-family: 'Microsoft Sans Serif', 'Tahoma', sans-serif;
-  color: #000;
-  display: flex;
-  justify-content: center;S
-  background-image: linear-gradient(45deg, #009999 25%, transparent 25%), 
-                    linear-gradient(-45deg, #009999 25%, transparent 25%), 
-                    linear-gradient(45deg, transparent 75%, #009999 75%),
-                    linear-gradient(-45deg, transparent 75%, #009999 75%);
-  background-size: 20px 20px;
-  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-}
-  
-.window {
+  body {
+    margin: 0;
+    padding: 0;
+    /* Windows 98 teal/blue background */
+    background-color: #008080;
+    /* Add the Windows 98 grid pattern */
+    background-image: url("data:image/svg+xml,%3Csvg width='64' height='64' viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 16c0-8.837 7.163-16 16-16s16 7.163 16 16-7.163 16-16 16S8 24.837 8 16zm0 0v1.5c0 1.325.14 2.618.408 3.858l.206.146a16.105 16.105 0 0 0 4.3 3.9c1.613.896 3.418 1.522 5.332 1.818.638.1 1.29.16 1.954.16 1.065 0 2.097-.16 3.067-.46 2.03-.634 3.842-1.835 5.282-3.434l.116.116c2.334 2.328 5.548 3.764 9.108 3.764 7.174 0 12.99-5.82 12.99-13s-5.816-13-12.99-13c-7.174 0-12.99 5.82-12.99 13l.002.2c.03.473.233.89.568 1.173.47.4 1.165.6 1.763.413.45-.13.835-.44 1.046-.854.16-.32.28-.64.28-.982 0-2.342 1.15-4.42 2.92-5.676.4-.285.836-.528 1.295-.724.88-.376 1.85-.588 2.87-.588 3.976 0 7.194 3.21 7.22 7.175 0 .07 0 .14-.002.214-.03 4.03-3.35 7.32-7.4 7.32a7.4 7.4 0 0 1-3.47-.865 7.348 7.348 0 0 1-3.65-4.765.972.972 0 0 0-.913-.76c-.09-.004-.18 0-.268.01-.37.06-.68.25-.865.55a1.017 1.017 0 0 0-.13.953 10.76 10.76 0 0 1 .778 4.05c0 5.97-4.84 10.816-10.802 10.816S9.02 28.845 9.02 22.87a10.82 10.82 0 0 1 1.784-5.945c.068-.11.132-.22.188-.336a1 1 0 0 0-.44-1.34 1 1 0 0 0-1.3.253z' fill='%230a0a0a' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+    font-family: 'Microsoft Sans Serif', 'Tahoma', sans-serif;
+  }
+
+  .window {
     border: 2px solid #000;
     background: #c0c0c0;
     font-family: 'Microsoft Sans Serif', 'Tahoma', sans-serif;
-    box-shadow: inset -2px -2px #fff, inset 2px 2px #808080;
+    box-shadow: inset -2px -2px #404040, inset 2px 2px #fff, 4px 4px 8px rgba(0, 0, 0, 0.5);
     padding: 0;
     color: black;
   }
 
   .title-bar {
-    background: linear-gradient(to right, #000080, #0000cd);
+    background: linear-gradient(to right, #000080, #1084d0);
     color: white;
     padding: 4px 8px;
     display: flex;
@@ -64,12 +60,43 @@ body {
     border: 1px solid #000;
     margin-left: 4px;
     padding: 0;
-    box-shadow: inset -1px -1px #fff, inset 1px 1px #404040;
+    box-shadow: inset -1px -1px #404040, inset 1px 1px #fff;
     cursor: pointer;
+    position: relative;
   }
 
   .title-bar-controls button:active {
-    box-shadow: inset 1px 1px #fff, inset -1px -1px #404040;
+    box-shadow: inset 1px 1px #404040, inset -1px -1px #fff;
+  }
+
+  .title-bar-controls button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .title-bar-controls button[aria-label="Close"]::before {
+    content: 'x';
+    font-size: 9px;
+    font-weight: bold;
+  }
+
+  .title-bar-controls button[aria-label="Minimize"]::before {
+    content: '';
+    width: 8px;
+    height: 2px;
+    background: #000;
+    bottom: 3px;
+  }
+
+  .title-bar-controls button[aria-label="Maximize"]::before {
+    content: '';
+    width: 8px;
+    height: 6px;
+    border: 1px solid #000;
+    background: transparent;
   }
 
   .window-body {
@@ -88,9 +115,9 @@ body {
   button {
     font-size: 12px;
     padding: 4px 8px;
-    background: #e0e0e0;
+    background: #c0c0c0;
     border: 1px solid #000;
-    box-shadow: inset -1px -1px #fff, inset 1px 1px #808080;
+    box-shadow: inset -1px -1px #404040, inset 1px 1px #fff;
     cursor: pointer;
     color: black;
   }
@@ -100,7 +127,7 @@ body {
   }
 
   button:active {
-    box-shadow: inset 1px 1px #fff, inset -1px -1px #808080;
+    box-shadow: inset 1px 1px #404040, inset -1px -1px #fff;
   }
 
   button:focus {
@@ -140,14 +167,14 @@ body {
     border: 2px solid #000 !important;
     background: #c0c0c0 !important;
     font-family: 'Microsoft Sans Serif', 'Tahoma', sans-serif !important;
-    box-shadow: inset -2px -2px #fff, inset 2px 2px #808080 !important;
+    box-shadow: inset -2px -2px #404040, inset 2px 2px #fff, 4px 4px 8px rgba(0, 0, 0, 0.5) !important;
     padding: 0 !important;
     color: black !important;
     border-radius: 0 !important;
   }
   
   .swal2-title {
-    background: linear-gradient(to right, #000080, #0000cd) !important;
+    background: linear-gradient(to right, #000080, #1084d0) !important;
     color: white !important;
     padding: 4px 8px !important;
     font-size: 14px !important;
@@ -175,9 +202,9 @@ body {
   .swal2-confirm, .swal2-cancel {
     font-size: 12px !important;
     padding: 4px 8px !important;
-    background: #e0e0e0 !important;
+    background: #c0c0c0 !important;
     border: 1px solid #000 !important;
-    box-shadow: inset -1px -1px #fff, inset 1px 1px #808080 !important;
+    box-shadow: inset -1px -1px #404040, inset 1px 1px #fff !important;
     cursor: pointer !important;
     color: black !important;
     border-radius: 0 !important;
@@ -188,7 +215,7 @@ body {
   }
   
   .swal2-confirm:active, .swal2-cancel:active {
-    box-shadow: inset 1px 1px #fff, inset -1px -1px #808080 !important;
+    box-shadow: inset 1px 1px #404040, inset -1px -1px #fff !important;
   }
   
   .swal2-confirm:focus, .swal2-cancel:focus {
@@ -217,7 +244,7 @@ body {
   }
   
   .notification-title {
-    background: linear-gradient(to right, #000080, #0000cd);
+    background: linear-gradient(to right, #000080, #1084d0);
     color: white;
     padding: 4px 8px;
     font-size: 12px;
@@ -257,7 +284,7 @@ body {
   }
   
   .notification-info .notification-title {
-    background: linear-gradient(to right, #000080, #0000cd);
+    background: linear-gradient(to right, #000080, #1084d0);
   }
   
   .notification-warning .notification-title {
@@ -293,6 +320,8 @@ export default function TodoList() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
+  
+
   // Notification system
   const addNotification = useCallback((title: string, message: string, type: NotificationType) => {
     const id = Date.now().toString();
@@ -303,7 +332,7 @@ export default function TodoList() {
     // Auto remove after 3 seconds
     setTimeout(() => {
       removeNotification(id);
-    }, 2000);
+    }, 3000);
     
     return id;
   }, []);
@@ -518,6 +547,8 @@ export default function TodoList() {
   return (
     <div>
       {styleTag}
+      
+      
       {/* Notifications Container */}
       <div className="notifications-container">
         <AnimatePresence>
@@ -616,6 +647,13 @@ export default function TodoList() {
             </ul>
           )}
         </div>
+      </div>
+      
+      {/* Windows 98 Taskbar */}
+      <div className="taskbar">
+        <div style={{ marginRight: '4px' }}>🪟</div>
+        Start
+        <div className="taskbar-time">{new Date().toLocaleTimeString()}</div>
       </div>
     </div>
   );
