@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: "Task98",
   description: "To-Do List Retro Windows 98 Style",
   icons: {
-    icon: "/public/favicon.ico", // Pastikan favicon.ico berada di folder /public
+    icon: "../app/favicon.ico", // Pastikan favicon.ico berada di folder /public
   },
 };
 
