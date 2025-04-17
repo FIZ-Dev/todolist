@@ -2,9 +2,6 @@
 
 A sleek, modern todolist application built with Next.js, featuring real-time updates and a clean user interface.
 
-# PREVIEW APP
-A To-Do-List Website use windows 98 style
-
 <a href="https://ibb.co.com/tw2KLrFx"><img src="https://i.ibb.co.com/V0C9w45Q/Screenshot-165.png" alt="Screenshot-165" border="0"></a>
 ## ✨ Features
 
@@ -79,7 +76,7 @@ You can start customizing your todolist app by modifying these files:
 ## 📱 Screenshots
 
 <div style="display: flex; gap: 20px;">
-  <img src="/api/placeholder/250/500" alt="Mobile view" width="250" />
+  <img src="https://i.ibb.co.com/V0C9w45Q/Screenshot-165.png" alt="Mobile view" width="250" />
   <img src="/api/placeholder/500/350" alt="Desktop view" width="500" />
 </div>
 
