@@ -3,7 +3,7 @@
 A sleek, modern todolist application built with Next.js, featuring real-time updates and a clean user interface.
 
 ![Todolist App Screenshot](https://ibb.co.com/tw2KLrFx)
-
+<a href="https://ibb.co.com/tw2KLrFx"><img src="https://i.ibb.co.com/V0C9w45Q/Screenshot-165.png" alt="Screenshot-165" border="0"></a>
 ## ✨ Features
 
 - **Real-time task management**: Add, edit, and delete tasks instantly
