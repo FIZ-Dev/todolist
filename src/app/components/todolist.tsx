@@ -110,6 +110,7 @@ const win98Style = `
     display: flex;
     align-items: center;
     gap: 4px;
+    margin-bottom: 6px;
   }
 
   button {
@@ -155,6 +156,31 @@ const win98Style = `
     font-family: 'Microsoft Sans Serif', 'Tahoma', sans-serif;
     box-shadow: inset -1px -1px #fff, inset 1px 1px #808080;
     color: black;
+  }
+
+  .search-box {
+    width: 100%;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    border: 2px solid #000;
+    background: #fff;
+    box-shadow: inset -1px -1px #fff, inset 1px 1px #808080;
+  }
+
+  .search-box input {
+    flex-grow: 1;
+    border: none;
+    box-shadow: none;
+    padding: 4px 8px;
+  }
+
+  .search-box select {
+    border: none;
+    border-left: 2px solid #000;
+    background: #c0c0c0;
+    padding: 4px;
+    box-shadow: inset -1px -1px #404040, inset 1px 1px #fff;
   }
 
   p {
@@ -290,6 +316,10 @@ const win98Style = `
   .notification-warning .notification-title {
     background: linear-gradient(to right, #806600, #a08200);
   }
+  
+  .search-type-select {
+    height: 27px;
+  }
 `;
 
 
@@ -303,6 +333,7 @@ type Task = {
 };
 
 type Filter = 'all' | 'completed' | 'ongoing';
+type SearchType = 'name' | 'date';
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
@@ -319,8 +350,8 @@ export default function TodoList() {
   const [filter, setFilter] = useState<Filter>('all');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-
-  
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchType, setSearchType] = useState<SearchType>('name');
 
   // Notification system
   const addNotification = useCallback((title: string, message: string, type: NotificationType) => {
@@ -538,16 +569,45 @@ export default function TodoList() {
     }
   };
 
-  const filteredTasks = tasks.filter((task) => {
+  // Function to handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Function to handle search type change
+  const handleSearchTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSearchType(e.target.value as SearchType);
+  };
+
+  // Function to filter tasks by search query and type
+  const searchTasks = (tasks: Task[]): Task[] => {
+    if (!searchQuery.trim()) return tasks;
+    
+    return tasks.filter((task) => {
+      if (searchType === 'name') {
+        return task.text.toLowerCase().includes(searchQuery.toLowerCase());
+      } else if (searchType === 'date') {
+        const taskDate = new Date(task.deadline).toLocaleDateString();
+        const searchDate = searchQuery.toLowerCase();
+        return taskDate.includes(searchDate);
+      }
+      return true;
+    });
+  };
+
+  // First filter by completion status, then by search query
+  const filteredByStatus = tasks.filter((task) => {
     if (filter === 'completed') return task.completed;
     if (filter === 'ongoing') return !task.completed;
     return true;
   });
 
+  // Apply search filter
+  const filteredTasks = searchTasks(filteredByStatus);
+
   return (
     <div>
       {styleTag}
-      
       
       {/* Notifications Container */}
       <div className="notifications-container">
@@ -588,6 +648,24 @@ export default function TodoList() {
           </div>
         </div>
         <div className="window-body">
+          {/* Search Box */}
+          <div className="search-box">
+            <input 
+              type="text" 
+              placeholder={`Cari berdasarkan ${searchType === 'name' ? 'nama tugas' : 'tanggal (DD/MM/YYYY)'}`}
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+            <select 
+              value={searchType} 
+              onChange={handleSearchTypeChange}
+              className="search-type-select"
+            >
+              <option value="name">Nama</option>
+              <option value="date">Tanggal</option>
+            </select>
+          </div>
+          
           <div className="field-row justify-between mb-2">
             <button onClick={addTask}>Tambah Tugas</button>
             <div className="field-row" style={{ gap: '0.25rem' }}>
@@ -603,7 +681,11 @@ export default function TodoList() {
             </div>
           ) : filteredTasks.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '1rem', border: '1px solid #000', background: '#FFFFCC' }}>
-              <p>Tidak ada tugas {filter === 'all' ? '' : filter === 'completed' ? 'yang selesai' : 'yang sedang berjalan'}.</p>
+              <p>
+                {searchQuery 
+                  ? `Tidak ada tugas yang cocok dengan pencarian "${searchQuery}".`
+                  : `Tidak ada tugas ${filter === 'all' ? '' : filter === 'completed' ? 'yang selesai' : 'yang sedang berjalan'}.`}
+              </p>
             </div>
           ) : (
             <ul style={{ listStyleType: 'none', padding: 0 }}>
@@ -648,7 +730,6 @@ export default function TodoList() {
           )}
         </div>
       </div>
-      
     </div>
   );
 }
