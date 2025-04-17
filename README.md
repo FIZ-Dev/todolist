@@ -2,8 +2,10 @@
 
 A sleek, modern todolist application built with Next.js, featuring real-time updates and a clean user interface.
 
-![Todolist App Screenshot](/api/placeholder/800/400)
+# PREVIEW APP
+A To-Do-List Website use windows 98 style
 
+<a href="https://ibb.co.com/tw2KLrFx"><img src="https://i.ibb.co.com/V0C9w45Q/Screenshot-165.png" alt="Screenshot-165" border="0"></a>
 ## ✨ Features
 
 - **Real-time task management**: Add, edit, and delete tasks instantly
@@ -104,4 +106,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Made with ❤️ by [Your Name](https://github.com/yourusername)
+Made with ❤️ by [Fizenshi.dev](https://github.com/Fizenshidev)
