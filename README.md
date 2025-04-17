@@ -2,7 +2,7 @@
 
 A sleek, modern todolist application built with Next.js, featuring real-time updates and a clean user interface.
 
-![Todolist App Screenshot](/api/placeholder/800/400)
+![Todolist App Screenshot](https://ibb.co.com/tw2KLrFx)
 
 ## ✨ Features
 
