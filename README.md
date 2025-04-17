@@ -75,7 +75,7 @@ You can start customizing your todolist app by modifying these files:
 ## 📱 Screenshots
 
 <div style="display: flex; gap: 20px;">
-  <img src="https://i.ibb.co.com/sJRkr5dh/Screenshot-20250418-022656.png" alt="Mobile view" width="300" />
+  <img src="https://i.ibb.co.com/sJRkr5dh/Screenshot-20250418-022656.png" alt="Mobile view" width="300" /><br>
   <img src="https://i.ibb.co.com/V0C9w45Q/Screenshot-165.png" alt="Desktop view" width="300" />
 </div>
 
